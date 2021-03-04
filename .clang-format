@@ -1,0 +1,36 @@
+BasedOnStyle: Google
+
+ColumnLimit: 120
+UseTab: Never
+IndentWidth: 4
+AccessModifierOffset: -4
+NamespaceIndentation: Inner
+BreakBeforeBraces: Allman
+
+AlwaysBreakTemplateDeclarations: Yes
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+PointerAlignment: Left
+AlignConsecutiveAssignments: false
+AlignTrailingComments: true
+
+
+SortIncludes  : true
+IncludeBlocks : Regroup
+IncludeCategories:
+  - Regex:           'RedEngine'
+    Priority:        2
+  - Regex:           '^<.*\.(?:h|hpp)>'
+    Priority:        3
+  - Regex:           '^<.*>'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        1
+
+SpaceAfterCStyleCast: true
+CommentPragmas: '^ NO-FORMAT:'
