@@ -35,10 +35,21 @@ void Cpu::PushOnStack(u8 value)
     S++;
 }
 
+void Cpu::PushOnStack(u16 value)
+{
+    PushOnStack((u8)(value >> 8));
+    PushOnStack((u8) value);
+}
+
 u8 Cpu::PopStack()
 {
     S--;
     return (*ram)[StackStartAddr + S];
+}
+
+u16 Cpu::PopStack16()
+{
+    u16 v = (u16) PopStack() | (((u16) PopStack()) << 8);
 }
 
 u8 Cpu::GetProcStatus()
@@ -87,316 +98,6 @@ void Cpu::Dump()
     std::cout << "Memory : " << std::endl;
     ram->Dump();
 }
-
-//
-// void Cpu::BVC()
-//{
-//    if (!V)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BVS()
-//{
-//    if (!V)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BRK() { ASSERT_NOT_REACHED(); }
-//
-// void Cpu::BPL()
-//{
-//    if (!Z)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BNE()
-//{
-//    if (!Z)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BMI()
-//{
-//    if (N)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BEQ()
-//{
-//    if (Z)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BCS()
-//{
-//    if (C)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::BCC()
-//{
-//    if (!C)
-//    {
-//        u8 M = ReadOneByte();
-//
-//        PC += (u16) M;
-//    }
-//}
-//
-// void Cpu::ASL()
-//{
-//    C = (A & 0x08) != 0;
-//    A = A << 1;
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//}
-//
-// void Cpu::AND()
-//{
-//    u8 M = ReadOneByte();
-//
-//    A = A & M;
-//
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//}
-//
-// void Cpu::SBC()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u16 value = A - M - (1 - (u16) C);
-//
-//    V = (A ^ (u8) value) & ~(A ^ M);
-//    A = (u8) value;
-//    Z = A == 0;
-//    N = (value & 0x0008) != 0;
-//    C = (value & 0xFF00) != 0;
-//}
-//
-// void Cpu::ADC()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u16 value = A + M + (u16) C;
-//
-//    V = (A ^ (u8) value) & ~(A ^ M);
-//    A = (u8) value;
-//    Z = A == 0;
-//    N = (value & 0x0008) != 0;
-//    C = (value & 0xFF00) != 0;
-//}
-//
-// void Cpu::LDA()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u16 value = M;
-//
-//    A = (u8) value;
-//    Z = A == 0;
-//    N = (value & 0x0008) != 0;
-//    C = (value & 0xFF00) != 0;
-//}
-//
-// void Cpu::LDX()
-//{
-//    u8 M = ReadOneByte();
-//
-//    X = M;
-//    Z = A == 0;
-//    N = (M & 0x08) != 0;
-//}
-//
-// void Cpu::LDY()
-//{
-//    u8 M = ReadOneByte();
-//
-//    Y = (u8) M;
-//    Z = A == 0;
-//    N = (M & 0x08) != 0;
-//}
-//
-// void Cpu::CMP()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u8 value = A - M;
-//
-//    Z = A == M;
-//    N = (value & 0x08) != 0;
-//    C = A >= M;
-//}
-//
-// void Cpu::CPX()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u8 value = X - M;
-//
-//    Z = X == M;
-//    N = (value & 0x08) != 0;
-//    C = X >= M;
-//}
-// void Cpu::CPY()
-//{
-//    u8 M = ReadOneByte();
-//
-//    u8 value = Y - M;
-//
-//    Z = Y == M;
-//    N = (value & 0x08) != 0;
-//    C = Y >= M;
-//}
-//
-// void Cpu::DEX()
-//{
-//    X -= 1;
-//
-//    Z = X == 0;
-//    N = (X & 0x08) != 0;
-//}
-//
-// void Cpu::DEY()
-//{
-//    Y -= 1;
-//
-//    Z = Y == 0;
-//    N = (Y & 0x08) != 0;
-//}
-//
-// void Cpu::EOR()
-//{
-//    u8 M = ReadOneByte();
-//
-//    A = A ^ M;
-//
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//}
-//
-//
-// void Cpu::INX()
-//{
-//    X += 1;
-//
-//    Z = X == 0;
-//    N = (X & 0x08) != 0;
-//}
-// void Cpu::INY()
-//{
-//    Y += 1;
-//
-//    Z = Y == 0;
-//    N = (Y & 0x08) != 0;
-//}
-//
-// void Cpu::JMP()
-//{
-//    u8 M = ReadOneByte();
-//
-//    PC = (PC & 0xFF00) & (u16) M;  // absolute
-//}
-//
-// void Cpu::JSR()
-//{
-//    u8 MSB = ReadOneByte();
-//    u8 LSB = ReadOneByte();
-//
-//    PushOnStack(PC);  // TODO Push u16 (minus one)
-//
-//    PC = ((u16) MSB << 8) & (u16) LSB;
-//}
-//
-// void Cpu::ORA()
-//{
-//    u8 M = ReadOneByte();
-//
-//    A = A | M;
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//}
-//
-// void Cpu::PHA() { PushOnStack(A); }
-//
-// void Cpu::PHP()
-//{
-//    u8 P = (((u8) C) << 6) & (((u8) Z) << 5) & (((u8) I) << 4) & (((u8) D) << 3) & (((u8) B) << 2) & (((u8) V) << 1) &
-//           ((u8) N);
-//
-//    PushOnStack(P);
-//}
-//
-// void Cpu::PLA()
-//{
-//    A = PopStack();
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//}
-//
-// void Cpu::PLP()
-//{
-//    u8 P = PopStack();
-//    Z = A == 0;
-//    N = (A & 0x08) != 0;
-//
-//    C == (P & 0x70) != 0;
-//    Z == (P & 0x70) != 0;
-//    I == (P & 0x70) != 0;
-//    D == (P & 0x70) != 0;
-//    B == (P & 0x70) != 0;
-//    V == (P & 0x70) != 0;  // TODO
-//}
-//
-// void Cpu::ROL()
-//{
-//    C = (A & 0x80) != 0;  // TODO TMP C
-//
-//    A = A << 1;
-//    A += C;
-//
-//    Z = Y == 0;
-//    N = (Y & 0x08) != 0;  // TODO There is a pb with the N flag mask
-//}
-//
-// void Cpu::ROR()
-//{
-//    C = (A & 0x01) != 0;  // TODO TMP C
-//
-//    A = A >> 1;
-//    A |= (u8) C << 7;
-//
-//    Z = Y == 0;
-//    N = (Y & 0x08) != 0;  // TODO There is a pb with the N flag mask
-//}
 
 // **********************************************
 // **********************************************
@@ -453,9 +154,14 @@ u16 Cpu::Relative()
 
 u8& Cpu::Absolute()
 {
+    return ReadAt(Absolute16());
+}
+
+u16 Cpu::Absolute16()
+{
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    return ReadAt((((u16) offset1) << 8) | (u16) offset2);
+    return (((u16) offset1) << 8) | (u16) offset2;
 }
 
 void Cpu::AbsoluteWrite(u8 data)
@@ -508,7 +214,7 @@ u8 Cpu::Indirect()
     return 0;
 }
 
-u8 Cpu::IndexedIndirect()
+u8 Cpu::IndirectX()
 {
     u8 offset = ReadOneByte();
     offset += X;
@@ -516,7 +222,7 @@ u8 Cpu::IndexedIndirect()
     return offset;
 }
 
-void Cpu::IndexedIndirectWrite(u8 data)
+void Cpu::IndirectXWrite(u8 data)
 {
     u8 offset = ReadOneByte();
     offset += X;
@@ -524,7 +230,7 @@ void Cpu::IndexedIndirectWrite(u8 data)
     Write(offset, data);
 }
 
-u8 Cpu::IndirectIndexed()
+u8 Cpu::IndirectY()
 {
     u8 offset = ReadOneByte();
     offset += Y;
@@ -532,7 +238,7 @@ u8 Cpu::IndirectIndexed()
     return offset;
 }
 
-void Cpu::IndirectIndexedWrite(u8 data)
+void Cpu::IndirectYWrite(u8 data)
 {
     u8 offset = ReadOneByte();
     offset += Y;
@@ -550,28 +256,36 @@ void Cpu::IndirectIndexedWrite(u8 data)
 
 IMMIDIATE(ADC, 0x69)
 {
+    ASSERT_NOT_REACHED();
 }
 
 ZERO_PAGE(ADC, 0x65)
 {
+    ASSERT_NOT_REACHED();
 }
 ZERO_PAGE_X(ADC, 0x75)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE(ADC, 0x6D)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE_X(ADC, 0x7D)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE_Y(ADC, 0x79)
 {
+    ASSERT_NOT_REACHED();
 }
 INDIRECT_X(ADC, 0x61)
 {
+    ASSERT_NOT_REACHED();
 }
 INDIRECT_Y(ADC, 0x71)
 {
+    ASSERT_NOT_REACHED();
 }
 IMMIDIATE(AND, 0x29)
 {
@@ -623,7 +337,7 @@ ABSOLUTE_Y(AND, 0x39)
 }
 INDIRECT_X(AND, 0x21)
 {
-    u8 m = IndexedIndirect();
+    u8 m = IndirectX();
     A = A & m;
 
     Z = A == 0;
@@ -631,7 +345,7 @@ INDIRECT_X(AND, 0x21)
 }
 INDIRECT_Y(AND, 0x31)
 {
-    u8 m = IndirectIndexed();
+    u8 m = IndirectY();
     A = A & m;
 
     Z = A == 0;
@@ -639,18 +353,52 @@ INDIRECT_Y(AND, 0x31)
 }
 ACCUMULATOR(ASL, 0x0A)
 {
+    C = (A & 0x80) != 0;
+
+    A = A << 1;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(ASL, 0x06)
 {
+    u8& m = ZeroPage();
+    C = (m & 0x80) != 0;
+
+    m = m << 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ZERO_PAGE_X(ASL, 0x16)
 {
+    u8& m = ZeroPageX();
+    C = (m & 0x80) != 0;
+
+    m = m << 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE(ASL, 0x0E)
 {
+    u8& m = Absolute();
+    C = (m & 0x80) != 0;
+
+    m = m << 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE_X(ASL, 0x1E)
 {
+    u8& m = AbsoluteX();
+    C = (m & 0x80) != 0;
+
+    m = m << 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 RELATIVE(BCC, 0x90)
 {
@@ -681,9 +429,23 @@ RELATIVE(BEQ, 0xF0)
 }
 ZERO_PAGE(BIT, 0x24)
 {
+    u8 m = ZeroPage();
+
+    u8 AandM = A & m;
+
+    Z = AandM == 0;
+    N = 0x80 & m;
+    V = 0x40 & m;
 }
 ABSOLUTE(BIT, 0x2C)
 {
+    u8 m = Absolute();
+
+    u8 AandM = A & m;
+
+    Z = AandM == 0;
+    N = 0x80 & m;
+    V = 0x40 & m;
 }
 RELATIVE(BMI, 0x30)
 {
@@ -716,8 +478,7 @@ IMPLIED(BRK, 0x01)
 {
     u16 loc = (ReadAt(0xFFFE) << 8) | ReadAt(0xFFFF);
 
-    PushOnStack((u8)(PC >> 8));
-    PushOnStack((u8) PC);
+    PushOnStack(PC);
     PushOnStack(GetProcStatus());
 
     B = 1;
@@ -759,45 +520,143 @@ IMPLIED(CLV, 0xB8)
 }
 IMMIDIATE(CMP, 0xC9)
 {
+    u8 m = Immediate();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ZERO_PAGE(CMP, 0xC5)
 {
+    u8 m = ZeroPage();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ZERO_PAGE_X(CMP, 0xD5)
 {
+    u8 m = ZeroPageX();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ABSOLUTE(CMP, 0xCD)
 {
+    u8 m = Absolute();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ABSOLUTE_X(CMP, 0xDD)
 {
+    u8 m = AbsoluteX();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ABSOLUTE_Y(CMP, 0xD9)
 {
+    u8 m = AbsoluteY();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 INDIRECT_X(CMP, 0xC1)
 {
+    u8 m = IndirectX();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 INDIRECT_Y(CMP, 0xD1)
 {
+    u8 m = IndirectY();
+
+    u8 res = A - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 IMMIDIATE(CPX, 0xE0)
 {
+    u8 m = Immediate();
+
+    u8 res = X - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ZERO_PAGE(CPX, 0xE4)
 {
+    u8 m = ZeroPage();
+
+    u8 res = X - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ABSOLUTE(CPX, 0xEC)
 {
+    u8 m = Absolute();
+
+    u8 res = X - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 IMMIDIATE(CPY, 0xC0)
 {
+    u8 m = Immediate();
+
+    u8 res = Y - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ZERO_PAGE(CPY, 0xC4)
 {
+    u8 m = ZeroPage();
+
+    u8 res = Y - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ABSOLUTE(CPY, 0xCC)
 {
+    u8 m = Absolute();
+
+    u8 res = Y - m;
+
+    C = res >= 0;
+    Z = res == 0;
+    N = (0x80 & res) != 0;
 }
 ZERO_PAGE(DEC, 0xC6)
 {
@@ -851,39 +710,111 @@ IMPLIED(DEY, 0x88)
 }
 IMMIDIATE(EOR, 0x49)
 {
+    u8 m = Immediate();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(EOR, 0x45)
 {
+    u8 m = ZeroPage();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE_X(EOR, 0x55)
 {
+    u8 m = ZeroPageX();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE(EOR, 0x4D)
 {
+    u8 m = Absolute();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_X(EOR, 0x5D)
 {
+    u8 m = AbsoluteX();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_Y(EOR, 0x59)
 {
+    u8 m = AbsoluteY();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_X(EOR, 0x41)
 {
+    u8 m = IndirectX();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_Y(EOR, 0x51)
 {
+    u8 m = IndirectY();
+
+    A = A ^ m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(INC, 0xE6)
 {
+    u8& m = ZeroPage();
+
+    m += 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ZERO_PAGE_X(INC, 0xF6)
 {
+    u8& m = ZeroPageX();
+
+    m += 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE(INC, 0xEE)
 {
+    u8& m = Absolute();
+
+    m += 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE_X(INC, 0xFE)
 {
+    u8& m = AbsoluteX();
+
+    m += 1;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 IMPLIED(INX, 0xE8)
 {
@@ -901,13 +832,18 @@ IMPLIED(INY, 0xC8)
 }
 ABSOLUTE(JMP, 0x4C)
 {
-    u16 m = Absolute();
+    u16 m = Absolute16();
+    PC = m;
 }
 INDIRECT(JMP, 0x6C)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE(JSR, 0x20)
 {
+    PushOnStack(PC);
+
+    PC = Absolute16();
 }
 IMMIDIATE(LDA, 0xA9)
 {
@@ -965,7 +901,7 @@ ABSOLUTE_Y(LDA, 0xB9)
 }
 INDIRECT_X(LDA, 0xA1)
 {
-    u8 m = IndexedIndirect();
+    u8 m = IndirectX();
 
     A = m;
 
@@ -974,7 +910,7 @@ INDIRECT_X(LDA, 0xA1)
 }
 INDIRECT_Y(LDA, 0xB1)
 {
-    u8 m = IndirectIndexed();
+    u8 m = IndirectY();
 
     A = m;
 
@@ -1073,18 +1009,53 @@ ABSOLUTE_X(LDY, 0xBC)
 }
 ACCUMULATOR(LSR, 0x4A)
 {
+    u8 m = A;
+    C = (m & 0x01) != 0;
+
+    m = m >> 1;
+
+    Z = m == 0;
+    N = 0;
 }
 ZERO_PAGE(LSR, 0x46)
 {
+    u8& m = ZeroPage();
+    C = (m & 0x01) != 0;
+
+    m = m >> 1;
+
+    Z = m == 0;
+    N = 0;
 }
 ZERO_PAGE_X(LSR, 0x56)
 {
+    u8& m = ZeroPageX();
+    C = (m & 0x01) != 0;
+
+    m = m >> 1;
+
+    Z = m == 0;
+    N = 0;
 }
 ABSOLUTE(LSR, 0x4E)
 {
+    u8& m = Absolute();
+    C = (m & 0x01) != 0;
+
+    m = m >> 1;
+
+    Z = m == 0;
+    N = 0;
 }
 ABSOLUTE_X(LSR, 0x5E)
 {
+    u8& m = AbsoluteX();
+    C = (m & 0x01) != 0;
+
+    m = m >> 1;
+
+    Z = m == 0;
+    N = 0;
 }
 IMPLIED(NOP, 0xEA)
 {
@@ -1092,99 +1063,234 @@ IMPLIED(NOP, 0xEA)
 }
 IMMIDIATE(ORA, 0x09)
 {
+    u8 m = Immediate();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(ORA, 0x05)
 {
+    u8 m = ZeroPage();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE_X(ORA, 0x15)
 {
+    u8 m = ZeroPageX();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE(ORA, 0x0D)
 {
+    u8 m = Absolute();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_X(ORA, 0x1D)
 {
+    u8 m = AbsoluteX();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_Y(ORA, 0x19)
 {
+    u8 m = AbsoluteY();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_X(ORA, 0x01)
 {
+    u8 m = IndirectX();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_Y(ORA, 0x11)
 {
+    u8 m = IndirectY();
+    A = A | m;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 IMPLIED(PHA, 0x48)
 {
+    PushOnStack(A);
 }
 IMPLIED(PHP, 0x08)
 {
+    PushOnStack(GetProcStatus());
 }
 IMPLIED(PLA, 0x68)
 {
+    A = PopStack();
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 IMPLIED(PLP, 0x28)
 {
+    SetProcStatus(PopStack());
 }
 ACCUMULATOR(ROL, 0x2A)
 {
+    C = (A & 0x80) != 0;
+
+    A = A << 1 | (u8)C;
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(ROL, 0x26)
 {
+    u8& m = ZeroPage();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | (u8) C;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ZERO_PAGE_X(ROL, 0x36)
 {
+    u8& m = ZeroPageX();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | (u8) C;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE(ROL, 0x2E)
 {
+    u8& m = Absolute();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | (u8) C;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE_X(ROL, 0x3E)
 {
+    u8& m = AbsoluteX();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | (u8) C;
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ACCUMULATOR(ROR, 0x6A)
 {
+    C = (A & 0x80) != 0;
+
+    A = A >> 1 | ((u8) C << 7);
+
+    Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(ROR, 0x66)
 {
+    u8& m = ZeroPage();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | ((u8) C << 7);
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ZERO_PAGE_X(ROR, 0x76)
 {
+    u8& m = ZeroPageX();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | ((u8) C << 7);
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE(ROR, 0x6E)
 {
+    u8& m = Absolute();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | ((u8) C << 7);
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 ABSOLUTE_X(ROR, 0x7E)
 {
+    u8& m = AbsoluteX();
+
+    C = (m & 0x80) != 0;
+
+    m = m << 1 | ((u8) C << 7);
+
+    Z = m == 0;
+    N = (m & 0x80) != 0;
 }
 IMPLIED(RTI, 0x40)
 {
+    SetProcStatus(PopStack());
+
+    PC = PopStack16();
 }
 IMPLIED(RTS, 0x60)
 {
+    PC = PopStack16();
 }
 IMMIDIATE(SBC, 0xE9)
 {
+    ASSERT_NOT_REACHED();
 }
 ZERO_PAGE(SBC, 0xE5)
 {
+    ASSERT_NOT_REACHED();
 }
 ZERO_PAGE_X(SBC, 0xF5)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE(SBC, 0xED)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE_X(SBC, 0xFD)
 {
+    ASSERT_NOT_REACHED();
 }
 ABSOLUTE_Y(SBC, 0xF9)
 {
+    ASSERT_NOT_REACHED();
 }
 INDIRECT_X(SBC, 0xE1)
 {
+    ASSERT_NOT_REACHED();
 }
 INDIRECT_Y(SBC, 0xF1)
 {
+    ASSERT_NOT_REACHED();
 }
 IMPLIED(SEC, 0x38)
 {
@@ -1220,11 +1326,11 @@ ABSOLUTE_Y(STA, 0x99)
 }
 INDIRECT_X(STA, 0x81)
 {
-    IndexedIndirectWrite(A);
+    IndirectXWrite(A);
 }
 INDIRECT_Y(STA, 0x91)
 {
-    IndirectIndexedWrite(A);
+    IndirectYWrite(A);
 }
 ZERO_PAGE(STX, 0x86)
 {

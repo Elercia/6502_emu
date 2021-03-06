@@ -186,7 +186,9 @@ struct Cpu
     u8& ReadAt(u16 loc);
 
     void PushOnStack(u8 value);
+    void PushOnStack(u16 value);
     u8 PopStack();
+    u16 PopStack16();
 
     u8 GetProcStatus();
     void SetProcStatus(u8 status);
@@ -203,17 +205,18 @@ struct Cpu
     u8 ZeroPageY();
     void ZeroPageYWrite(u8 data);
     u16 Relative();
-    u8& Absolute(); // TODO Rework maybe not good (is it a indirection ?) 
+    u8& Absolute(); // Read the byte at absolute location
+    u16 Absolute16(); // Give the absolute location
     void AbsoluteWrite(u8 data);
     u8& AbsoluteX();
     void AbsoluteXWrite(u8 data);
     u8 AbsoluteY();
     void AbsoluteYWrite(u8 data);
     u8 Indirect();
-    u8 IndexedIndirect();
-    void IndexedIndirectWrite(u8 data);
-    u8 IndirectIndexed();
-    void IndirectIndexedWrite(u8 data);
+    u8 IndirectX();
+    void IndirectXWrite(u8 data);
+    u8 IndirectY();
+    void IndirectYWrite(u8 data);
 
 
     // All the operations
