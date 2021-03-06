@@ -50,7 +50,7 @@
     RELATIVE(BMI, 0x30)    \
     RELATIVE(BNE, 0xD0)    \
     RELATIVE(BPL, 0x10)    \
-    IMPLIED(BRK, 0x01)     \
+    IMPLIED(BRK, 0x00)     \
     RELATIVE(BVC, 0x50)    \
     RELATIVE(BVS, 0x70)    \
     IMPLIED(CLC, 0x18)     \
@@ -245,6 +245,8 @@ struct Cpu
 
     RAM* ram;
 
-    static std::map<u8, OperationCode> ConstructOperations();
-    static std::map<u8, OperationCode> OpCodes;
+    using OperationMap = std::map<u8, std::pair<const char*, OperationCode>>;
+
+    static OperationMap ConstructOperations();
+    static OperationMap OpCodes;
 };

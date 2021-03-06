@@ -17,7 +17,7 @@ struct Memory
 
     u8 operator[](int loc) const { return Mem[loc]; }
 
-    void LoadFromFile(const char* filename);
+    void LoadFromFile(u16 startLocation, const char* filename);
 
     void Dump();
 
@@ -39,18 +39,30 @@ void Memory<SIZE>::Dump()
 }
 
 template <u16 SIZE>
-void Memory<SIZE>::LoadFromFile(const char* filename)
+void Memory<SIZE>::LoadFromFile(u16 startLocation, const char* filename)
 {
-    std::ifstream file(filename, std::ios::binary);
-    if (!file.is_open())
-    {
+    FILE* file = fopen(filename, "rb");
+
+    if (file == NULL)
         return;
+
+    fseek(file, 0, SEEK_END);
+
+    size_t fileSize = ftell(file);
+
+    fseek(file, 0, SEEK_SET);
+
+    size_t readSize = fread((Mem + startLocation), 1, fileSize, file);
+
+    if (readSize != fileSize)
+    {
+        ASSERT_NOT_REACHED();
     }
 
-    file.read((char*) Mem, SIZE);
+    fclose(file);
 }
 
-constexpr u16 RamSize = 64 * 1000;  // 64 KB
+constexpr u16 RamSize = 65526;  // 64 KB
 using RAM = Memory<RamSize>;
 
 constexpr u16 StackStartAddr = 0x0100;

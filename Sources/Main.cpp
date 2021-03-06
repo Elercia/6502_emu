@@ -9,14 +9,11 @@ int main(int argc, const char* argv[])
 
     if (argc > 1)
     {
-        ram.LoadFromFile(argv[1]);
+        ram.LoadFromFile(0x000A, argv [1]); 
     }
 
-    ram[0] = 0xA9;
-    ram[1] = 0x01;
-
     Cpu cpu(&ram);
-
+    cpu.PC = 0x400;
     cpu.Run();
 
     cpu.Dump();

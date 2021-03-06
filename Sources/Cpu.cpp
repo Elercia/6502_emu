@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-std::map<u8, Cpu::OperationCode> Cpu::OpCodes = ConstructOperations();
+Cpu::OperationMap Cpu::OpCodes = ConstructOperations();
 
 Cpu::Cpu(RAM* _ram) : ram(_ram)
 {
@@ -50,6 +50,8 @@ u8 Cpu::PopStack()
 u16 Cpu::PopStack16()
 {
     u16 v = (u16) PopStack() | (((u16) PopStack()) << 8);
+
+    return v;
 }
 
 u8 Cpu::GetProcStatus()
@@ -73,36 +75,47 @@ void Cpu::SetProcStatus(u8 status)
 
 void Cpu::Run()
 {
-    u8 opCode = ReadOneByte();
-
-    while (opCode != 0)
+    u8 opCode = 0;
+    while (true)
     {
-        (this->*OpCodes[opCode])();
         opCode = ReadOneByte();
+
+        auto opIt = OpCodes.find(opCode);
+        if (opIt == OpCodes.end())
+        {
+            ASSERT_NOT_REACHED();
+            break;
+        }
+        printf("Doing %s\n", opIt->second.first);
+        (this->*(opIt->second.second))();
     }
 }
 
 void Cpu::Dump()
 {
-    std::cout << "Registries :" << std::endl;
-    std::cout << "Accumulator " << std::to_string(A) << std::endl;
-    std::cout << "Index Register X " << std::to_string(X) << std::endl;
-    std::cout << "Index Register Y " << std::to_string(Y) << std::endl;
-    std::cout << "Stack pointer " << std::to_string(S) << std::endl;
-    std::cout << "Program counter " << std::to_string(PC) << std::endl;
+    printf("\n\n===========\n");
+    printf("Registries :\n");
+    printf("\tAccumulator : 0x%02x\n", A);
+    printf("\tIndex Register : 0x%02x\n", X);
+    printf("\tIndex Register Y : 0x%02x\n", Y);
+    printf("\tStack pointer : 0x%02x\n", S);
+    printf("\tProgram counter : 0x%04x\n", PC);
 
-    std::cout << "\nFlags :" << std::endl;
-    std::cout << "Carry Flag " << std::to_string(C) << std::endl;
-    std::cout << "Zero Flag " << std::to_string(Z) << std::endl;
-    std::cout << "Interrupt Disable " << std::to_string(I) << std::endl;
-    std::cout << "Decimal Mode " << std::to_string(D) << std::endl;
-    std::cout << "Overflow Flag " << std::to_string(V) << std::endl;
-    std::cout << "Negative Flag " << std::to_string(N) << std::endl;
+    printf("Flags :\n");
+    printf("\tCarry Flag : %d\n", C);
+    printf("\tZero Flag : %d\n", Z);
+    printf("\tInterrupt Disable : %d\n", I);
+    printf("\tDecimal Mode : %d\n", D);
+    printf("\tOverflow Flag : %d\n", V);
+    printf("\tNegative Flag : %d\n", N);
+    printf("\tBreak flag : %d\n", B);
 
-    std::cout << "Cycles " << cycles << std::endl;
+    printf("===========\n\n");
 
-    std::cout << "Memory : " << std::endl;
-    ram->Dump();
+    // std::cout << "Cycles " << cycles << std::endl;
+
+    // std::cout << "Memory : " << std::endl;
+    // ram->Dump();
 }
 
 // **********************************************
@@ -155,7 +168,7 @@ void Cpu::ZeroPageYWrite(u8 data)
 u16 Cpu::Relative()
 {
     u8 offset = ReadOneByte();
-    return PC + (u16) offset;
+    return (u16)((i16)PC + (i16) offset);
 }
 
 u8& Cpu::Absolute()
@@ -167,7 +180,7 @@ u16 Cpu::Absolute16()
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    return (((u16) offset1) << 8) | (u16) offset2;
+    return ((u16) offset1) | ((u16) offset2 << 8);
 }
 
 void Cpu::AbsoluteWrite(u8 data)
@@ -568,6 +581,8 @@ RELATIVE(BPL, 0x10)
 }
 IMPLIED(BRK, 0x01)
 {
+    Dump();
+
     u16 loc = (ReadAt(0xFFFE) << 8) | ReadAt(0xFFFF);
 
     PushOnStack(PC);
@@ -575,6 +590,8 @@ IMPLIED(BRK, 0x01)
 
     B = 1;
     PC = loc;
+
+    Dump();
 }
 RELATIVE(BVC, 0x50)
 {
@@ -1577,11 +1594,11 @@ IMPLIED(TYA, 0x98)
 // **********************************************
 // **********************************************
 
-std::map<u8, Cpu::OperationCode> Cpu::ConstructOperations()
+Cpu::OperationMap Cpu::ConstructOperations()
 {
-#define OPERATION(OP, CODE, MODE) {(u8) CODE, &Cpu::OP##_##MODE},
+#define OPERATION(OP, CODE, MODE) {(u8) CODE, {#OP " " #MODE, &Cpu::OP##_##MODE}},
 
-    return std::map<u8, Cpu::OperationCode>({ALL_OPS{(u8) 0xEA, &Cpu::NOP_IMPLIED}});
+    return Cpu::OperationMap({ALL_OPS{(u8) 0xEA, {"", &Cpu::NOP_IMPLIED}}});
 
 #undef OPERATION
 }
