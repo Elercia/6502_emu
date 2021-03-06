@@ -205,8 +205,8 @@ struct Cpu
     u8 ZeroPageY();
     void ZeroPageYWrite(u8 data);
     u16 Relative();
-    u8& Absolute(); // Read the byte at absolute location
-    u16 Absolute16(); // Give the absolute location
+    u8& Absolute();    // Read the byte at absolute location
+    u16 Absolute16();  // Give the absolute location
     void AbsoluteWrite(u8 data);
     u8& AbsoluteX();
     void AbsoluteXWrite(u8 data);
@@ -218,7 +218,6 @@ struct Cpu
     u8 IndirectY();
     void IndirectYWrite(u8 data);
 
-
     // All the operations
 #define OPERATION(OP, CODE, MODE) void OP##_##MODE();
 
@@ -229,7 +228,7 @@ struct Cpu
     // Cpu Related registers
     u8 A{0};        // Accumulator
     u8 X{0}, Y{0};  // Index Registers
-    u8 S{0};        // Stack pointer
+    u8 S{0xFF};     // Stack pointer
     u16 PC{0};      // Program counter
 
     bool C{0};  // Carry Flag

@@ -31,8 +31,9 @@ u8& Cpu::ReadAt(u16 loc)
 
 void Cpu::PushOnStack(u8 value)
 {
-    (*ram)[StackStartAddr + S] = value;
-    S++;
+    u16 stackPtr = StackStartAddr | (u16) S;
+    (*ram)[stackPtr] = value;
+    S--;
 }
 
 void Cpu::PushOnStack(u16 value)
@@ -43,8 +44,9 @@ void Cpu::PushOnStack(u16 value)
 
 u8 Cpu::PopStack()
 {
-    S--;
-    return (*ram)[StackStartAddr + S];
+    S++;
+    u16 stackPtr = StackStartAddr | (u16) S;
+    return (*ram)[stackPtr];
 }
 
 u16 Cpu::PopStack16()
@@ -56,21 +58,21 @@ u16 Cpu::PopStack16()
 
 u8 Cpu::GetProcStatus()
 {
-    u8 P = (((u8) C) << 6) & (((u8) Z) << 5) & (((u8) I) << 4) & (((u8) D) << 3) & (((u8) B) << 2) & (((u8) V) << 1) &
-           ((u8) N);
+    u8 P = (((u8) C) << 0) & (((u8) Z) << 1) & (((u8) I) << 2) & (((u8) D) << 3) & (((u8) B) << 4) & (((u8) 1) << 5) &
+           (((u8) V) << 6) & ((u8) N << 7);
 
     return P;
 }
 
 void Cpu::SetProcStatus(u8 status)
 {
-    C = (status & 0X40) != 0;
-    Z = (status & 0X20) != 0;
-    I = (status & 0X10) != 0;
+    C = (status & 0X01) != 0;
+    Z = (status & 0X02) != 0;
+    I = (status & 0X04) != 0;
     D = (status & 0X08) != 0;
-    B = (status & 0X04) != 0;
-    V = (status & 0X02) != 0;
-    N = (status & 0X01) != 0;
+    B = (status & 0X10) != 0;
+    V = (status & 0X40) != 0;
+    N = (status & 0X80) != 0;
 }
 
 void Cpu::Run()
@@ -91,7 +93,7 @@ void Cpu::Run()
         printf("Doing $%04x %s\n", opPC, opIt->second.first);
         (this->*(opIt->second.second))();
 
-        if ( PC == opPC) // We are in a trap
+        if (PC == opPC)  // We are in a trap
         {
             ASSERT_NOT_REACHED();
         }
