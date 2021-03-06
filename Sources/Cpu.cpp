@@ -75,9 +75,11 @@ void Cpu::SetProcStatus(u8 status)
 
 void Cpu::Run()
 {
+    int nbOperationDone = 0;
     u8 opCode = 0;
     while (true)
     {
+        u16 opPC = PC;
         opCode = ReadOneByte();
 
         auto opIt = OpCodes.find(opCode);
@@ -86,8 +88,15 @@ void Cpu::Run()
             ASSERT_NOT_REACHED();
             break;
         }
-        printf("Doing %s\n", opIt->second.first);
+        printf("Doing $%04x %s\n", opPC, opIt->second.first);
         (this->*(opIt->second.second))();
+
+        if ( PC == opPC) // We are in a trap
+        {
+            ASSERT_NOT_REACHED();
+        }
+
+        nbOperationDone++;
     }
 }
 
@@ -168,7 +177,10 @@ void Cpu::ZeroPageYWrite(u8 data)
 u16 Cpu::Relative()
 {
     u8 offset = ReadOneByte();
-    return (u16)((i16)PC + (i16) offset);
+    i8 signedOffset = (i8) offset;
+    u16 newValue = (u16)((i16) PC + (i16) signedOffset);
+
+    return newValue;
 }
 
 u8& Cpu::Absolute()
@@ -187,14 +199,14 @@ void Cpu::AbsoluteWrite(u8 data)
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    Write((((u16) offset1) << 8) | (u16) offset2, data);
+    Write(((u16) offset1) | ((u16) offset2 << 8), data);
 }
 
 u8& Cpu::AbsoluteX()
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    u16 fullOffset = (((u16) offset1) << 8) | (u16) offset2;
+    u16 fullOffset = ((u16) offset1) | ((u16) offset2 << 8);
 
     return ReadAt(fullOffset + (u16) X);
 }
@@ -203,7 +215,7 @@ void Cpu::AbsoluteXWrite(u8 data)
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    u16 fullOffset = (((u16) offset1) << 8) | (u16) offset2;
+    u16 fullOffset = ((u16) offset1) | ((u16) offset2 << 8);
 
     Write(fullOffset + (u16) X, data);
 }
@@ -212,7 +224,7 @@ u8 Cpu::AbsoluteY()
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    u16 fullOffset = (((u16) offset1) << 8) | (u16) offset2;
+    u16 fullOffset = ((u16) offset1) | ((u16) offset2 << 8);
 
     return ReadAt(fullOffset + (u16) Y);
 }
@@ -221,7 +233,7 @@ void Cpu::AbsoluteYWrite(u8 data)
 {
     u8 offset1 = ReadOneByte();
     u8 offset2 = ReadOneByte();
-    u16 fullOffset = (((u16) offset1) << 8) | (u16) offset2;
+    u16 fullOffset = ((u16) offset1) | ((u16) offset2 << 8);
 
     Write(fullOffset + (u16) Y, data);
 }
@@ -579,10 +591,8 @@ RELATIVE(BPL, 0x10)
         PC = jump;
     }
 }
-IMPLIED(BRK, 0x01)
+IMPLIED(BRK, 0x00)
 {
-    Dump();
-
     u16 loc = (ReadAt(0xFFFE) << 8) | ReadAt(0xFFFF);
 
     PushOnStack(PC);
@@ -590,8 +600,6 @@ IMPLIED(BRK, 0x01)
 
     B = 1;
     PC = loc;
-
-    Dump();
 }
 RELATIVE(BVC, 0x50)
 {
@@ -633,7 +641,7 @@ IMMIDIATE(CMP, 0xC9)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -643,7 +651,7 @@ ZERO_PAGE(CMP, 0xC5)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -653,7 +661,7 @@ ZERO_PAGE_X(CMP, 0xD5)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -663,7 +671,7 @@ ABSOLUTE(CMP, 0xCD)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -673,7 +681,7 @@ ABSOLUTE_X(CMP, 0xDD)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -683,7 +691,7 @@ ABSOLUTE_Y(CMP, 0xD9)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -693,7 +701,7 @@ INDIRECT_X(CMP, 0xC1)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -703,7 +711,7 @@ INDIRECT_Y(CMP, 0xD1)
 
     u8 res = A - m;
 
-    C = res >= 0;
+    C = A >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -713,7 +721,7 @@ IMMIDIATE(CPX, 0xE0)
 
     u8 res = X - m;
 
-    C = res >= 0;
+    C = X >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -723,7 +731,7 @@ ZERO_PAGE(CPX, 0xE4)
 
     u8 res = X - m;
 
-    C = res >= 0;
+    C = X >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -733,7 +741,7 @@ ABSOLUTE(CPX, 0xEC)
 
     u8 res = X - m;
 
-    C = res >= 0;
+    C = X >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -743,7 +751,7 @@ IMMIDIATE(CPY, 0xC0)
 
     u8 res = Y - m;
 
-    C = res >= 0;
+    C = Y >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -753,7 +761,7 @@ ZERO_PAGE(CPY, 0xC4)
 
     u8 res = Y - m;
 
-    C = res >= 0;
+    C = Y >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
@@ -763,7 +771,7 @@ ABSOLUTE(CPY, 0xCC)
 
     u8 res = Y - m;
 
-    C = res >= 0;
+    C = Y >= m;
     Z = res == 0;
     N = (0x80 & res) != 0;
 }
