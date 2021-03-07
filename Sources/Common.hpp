@@ -8,3 +8,11 @@ using u16 = uint16_t;
 using i16 = int16_t;
 
 #define ASSERT_NOT_REACHED() __debugbreak()
+#define ASSERT(X)           \
+    do                      \
+    {                       \
+        if (!X)             \
+        {                   \
+            __debugbreak(); \
+        }                   \
+    } while (0)

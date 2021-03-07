@@ -190,7 +190,7 @@ struct Cpu
     u8 PopStack();
     u16 PopStack16();
 
-    u8 GetProcStatus();
+    u8 GetProcStatus(bool forceBreak = false);// forceBreak is used by PHP
     void SetProcStatus(u8 status);
 
     void Run();

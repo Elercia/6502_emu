@@ -38,8 +38,8 @@ void Cpu::PushOnStack(u8 value)
 
 void Cpu::PushOnStack(u16 value)
 {
-    PushOnStack((u8)(value >> 8));
     PushOnStack((u8) value);
+    PushOnStack((u8)(value >> 8));
 }
 
 u8 Cpu::PopStack()
@@ -56,10 +56,15 @@ u16 Cpu::PopStack16()
     return v;
 }
 
-u8 Cpu::GetProcStatus()
+u8 Cpu::GetProcStatus(bool forceBreak /*= false*/)
 {
-    u8 P = (((u8) C) << 0) & (((u8) Z) << 1) & (((u8) I) << 2) & (((u8) D) << 3) & (((u8) B) << 4) & (((u8) 1) << 5) &
-           (((u8) V) << 6) & ((u8) N << 7);
+    u8 P = (((u8) C) << 0) | (((u8) Z) << 1) | (((u8) I) << 2) | (((u8) D) << 3) | (((u8) B) << 4) | (((u8) 1) << 5) |
+           (((u8) V) << 6) | ((u8) N << 7);
+
+    if (forceBreak)
+    {
+        P |= (((u8) 1) << 4);
+    }
 
     return P;
 }
@@ -1251,7 +1256,8 @@ IMPLIED(PHA, 0x48)
 }
 IMPLIED(PHP, 0x08)
 {
-    PushOnStack(GetProcStatus());
+    u8 procStatus = GetProcStatus(true);
+    PushOnStack(procStatus);
 }
 IMPLIED(PLA, 0x68)
 {
@@ -1262,7 +1268,10 @@ IMPLIED(PLA, 0x68)
 }
 IMPLIED(PLP, 0x28)
 {
-    SetProcStatus(PopStack());
+    u8 data = PopStack();
+    SetProcStatus(data);
+
+    B = 0; //TODO Useless ?
 }
 ACCUMULATOR(ROL, 0x2A)
 {
