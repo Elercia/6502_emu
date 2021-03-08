@@ -36,24 +36,11 @@ void Cpu::PushOnStack(u8 value)
     S--;
 }
 
-void Cpu::PushOnStack(u16 value)
-{
-    PushOnStack((u8) value);
-    PushOnStack((u8)(value >> 8));
-}
-
 u8 Cpu::PopStack()
 {
     S++;
     u16 stackPtr = StackStartAddr | (u16) S;
     return (*ram)[stackPtr];
-}
-
-u16 Cpu::PopStack16()
-{
-    u16 v = (u16) PopStack() | (((u16) PopStack()) << 8);
-
-    return v;
 }
 
 u8 Cpu::GetProcStatus(bool forceBreak /*= false*/)
@@ -95,7 +82,9 @@ void Cpu::Run()
             ASSERT_NOT_REACHED();
             break;
         }
+
         printf("Doing $%04x %s\n", opPC, opIt->second.first);
+
         (this->*(opIt->second.second))();
 
         if (PC == opPC)  // We are in a trap
@@ -250,12 +239,12 @@ u16 Cpu::Indirect()
     u8 m1 = ReadOneByte();
     u8 m2 = ReadOneByte();
 
-    u16 indirectLoc = (((u16) m1) << 8) | (u16) m2;
+    u16 indirectLoc = ((u16) m1) | ((u16) m2 << 8);
 
     u8 v1 = ReadAt(indirectLoc);
     u8 v2 = ReadAt(indirectLoc + 1);
 
-    return (((u16) v2) << 8) | (u16) v1;
+    return (u16) v1 | (((u16) v2) << 8);
 }
 
 u8 Cpu::IndirectX()
@@ -600,12 +589,18 @@ RELATIVE(BPL, 0x10)
 }
 IMPLIED(BRK, 0x00)
 {
-    u16 loc = (ReadAt(0xFFFE) << 8) | ReadAt(0xFFFF);
+    u16 loc = (ReadAt(0xFFFE)) | (ReadAt(0xFFFF) << 8);
 
-    PushOnStack(PC);
-    PushOnStack(GetProcStatus());
+    u16 data = PC + 1;
+    PushOnStack((u8)(data >> 8));
+    PushOnStack((u8)(data));
 
     B = 1;
+
+    PushOnStack(GetProcStatus());
+
+    I = 1;
+
     PC = loc;
 }
 RELATIVE(BVC, 0x50)
@@ -966,7 +961,9 @@ INDIRECT(JMP, 0x6C)
 }
 ABSOLUTE(JSR, 0x20)
 {
-    PushOnStack(PC);
+    u16 data = PC + 1;
+    PushOnStack((u8)(data >> 8));
+    PushOnStack((u8)(data));
 
     PC = Absolute16();
 }
@@ -1271,7 +1268,7 @@ IMPLIED(PLP, 0x28)
     u8 data = PopStack();
     SetProcStatus(data);
 
-    B = 0; //TODO Useless ?
+    B = 0;  // TODO Useless ?
 }
 ACCUMULATOR(ROL, 0x2A)
 {
@@ -1383,11 +1380,19 @@ IMPLIED(RTI, 0x40)
 {
     SetProcStatus(PopStack());
 
-    PC = PopStack16();
+    u8 m1 = PopStack();
+    u8 m2 = PopStack();
+
+    PC = ((u16) m1) | ((u16) m2 << 8);
 }
 IMPLIED(RTS, 0x60)
 {
-    PC = PopStack16();
+    u8 m1 = PopStack();
+    u8 m2 = PopStack();
+
+    PC = ((u16) m1) | ((u16) m2 << 8);
+
+    PC++;
 }
 IMMIDIATE(SBC, 0xE9)
 {

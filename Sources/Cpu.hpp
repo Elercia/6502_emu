@@ -186,9 +186,7 @@ struct Cpu
     u8& ReadAt(u16 loc);
 
     void PushOnStack(u8 value);
-    void PushOnStack(u16 value);
     u8 PopStack();
-    u16 PopStack16();
 
     u8 GetProcStatus(bool forceBreak = false);// forceBreak is used by PHP
     void SetProcStatus(u8 status);
