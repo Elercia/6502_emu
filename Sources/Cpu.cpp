@@ -255,7 +255,7 @@ u8& Cpu::IndirectX()
     u8 v1 = ReadAt(offset1);
     u8 v2 = ReadAt(offset2);
 
-    u8 loc = v1 | (v2 << 8);
+    u16 loc = v1 | (v2 << 8);
 
     return ReadAt(loc);
 }
@@ -271,10 +271,10 @@ u8& Cpu::IndirectY()
     u8 offset1 = ReadOneByte();
     u8 offset2 = (offset1 + 1) % 256;
 
-    u8 v1 = ReadAt(offset1);
-    u8 v2 = ReadAt(offset2);
+    u8 low = ReadAt((u16)offset1);
+    u8 high = ReadAt((u16) offset2);
 
-    u8 loc = ( v1 | (v2 << 8) ) + Y;
+    u16 loc = ((u16) low | ((u16) high << 8)) + Y;
 
     return ReadAt(loc);
 }
