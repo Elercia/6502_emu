@@ -1135,7 +1135,7 @@ ABSOLUTE_X(LDY, 0xBC)
 }
 ACCUMULATOR(LSR, 0x4A)
 {
-    u8 m = A;
+    u8& m = A;
     C = (m & 0x01) != 0;
 
     m = m >> 1;
