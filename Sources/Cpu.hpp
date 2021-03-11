@@ -233,7 +233,6 @@ struct Cpu
     bool Z{0};  // Zero Flag
     bool I{0};  // Interrupt Disable
     bool D{0};  // Decimal Mode
-    bool B{0};  // Break Command
     bool V{0};  // Overflow Flag
     bool N{0};  // Negative Flag
 

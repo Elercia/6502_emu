@@ -45,7 +45,7 @@ u8 Cpu::PopStack()
 
 u8 Cpu::GetProcStatus(bool forceBreak /*= false*/)
 {
-    u8 P = (((u8) C) << 0) | (((u8) Z) << 1) | (((u8) I) << 2) | (((u8) D) << 3) | (((u8) B) << 4) | (((u8) 1) << 5) |
+    u8 P = (((u8) C) << 0) | (((u8) Z) << 1) | (((u8) I) << 2) | (((u8) D) << 3) | (((u8) 1) << 5) |
            (((u8) V) << 6) | ((u8) N << 7);
 
     if (forceBreak)
@@ -62,7 +62,6 @@ void Cpu::SetProcStatus(u8 status)
     Z = (status & 0X02) != 0;
     I = (status & 0X04) != 0;
     D = (status & 0X08) != 0;
-    B = (status & 0X10) != 0;
     V = (status & 0X40) != 0;
     N = (status & 0X80) != 0;
 }
@@ -113,7 +112,6 @@ void Cpu::Dump()
     printf("\tDecimal Mode : %d\n", D);
     printf("\tOverflow Flag : %d\n", V);
     printf("\tNegative Flag : %d\n", N);
-    printf("\tBreak flag : %d\n", B);
 
     printf("===========\n\n");
 
@@ -149,25 +147,25 @@ void Cpu::ZeroPageWrite(u8 data)
 u8& Cpu::ZeroPageX()
 {
     u8 offset = ReadOneByte();
-    return ReadAt(0x0000 + (u16) offset + (u16) X);
+    return ReadAt((0x0000 | (u16) offset) + (u16) X);
 }
 
 void Cpu::ZeroPageXWrite(u8 data)
 {
     u8 offset = ReadOneByte();
-    Write(0x0000 + (u16) offset + (u16) X, data);
+    Write((0x0000 | (u16) offset) + (u16) X, data);
 }
 
 u8 Cpu::ZeroPageY()
 {
     u8 offset = ReadOneByte();
-    return ReadAt(0x0000 + (u16) offset + (u16) Y);
+    return ReadAt((0x0000 | (u16) offset) + (u16) Y);
 }
 
 void Cpu::ZeroPageYWrite(u8 data)
 {
     u8 offset = ReadOneByte();
-    Write(0x0000 + (u16) offset + (u16) Y, data);
+    Write((0x0000 | (u16) offset) + (u16) Y, data);
 }
 
 u16 Cpu::Relative()
@@ -227,9 +225,9 @@ u8 Cpu::AbsoluteY()
 
 void Cpu::AbsoluteYWrite(u8 data)
 {
-    u8 offset1 = ReadOneByte();
-    u8 offset2 = ReadOneByte();
-    u16 fullOffset = ((u16) offset1) | ((u16) offset2 << 8);
+    u8 low = ReadOneByte();
+    u8 high = ReadOneByte();
+    u16 fullOffset = ((u16) low) | ((u16) high << 8);
 
     Write(fullOffset + (u16) Y, data);
 }
@@ -595,9 +593,7 @@ IMPLIED(BRK, 0x00)
     PushOnStack((u8)(data >> 8));
     PushOnStack((u8)(data));
 
-    B = 1;
-
-    PushOnStack(GetProcStatus());
+    PushOnStack(GetProcStatus(true));
 
     I = 1;
 
@@ -1059,7 +1055,7 @@ ZERO_PAGE(LDX, 0xA6)
 }
 ZERO_PAGE_Y(LDX, 0xB6)
 {
-    u8 m = ZeroPageX();
+    u8 m = ZeroPageY();
 
     X = m;
 
@@ -1068,7 +1064,7 @@ ZERO_PAGE_Y(LDX, 0xB6)
 }
 ABSOLUTE(LDX, 0xAE)
 {
-    u8 m = ZeroPageY();
+    u8 m = Absolute();
 
     X = m;
 
@@ -1079,10 +1075,10 @@ ABSOLUTE_Y(LDX, 0xBE)
 {
     u8 m = AbsoluteY();
 
-    Y = m;
+    X = m;
 
-    Z = Y == 0;
-    N = (Y & 0x80) != 0;
+    Z = X == 0;
+    N = (X & 0x80) != 0;
 }
 IMMIDIATE(LDY, 0xA0)
 {
@@ -1267,8 +1263,6 @@ IMPLIED(PLP, 0x28)
 {
     u8 data = PopStack();
     SetProcStatus(data);
-
-    B = 0;  // TODO Useless ?
 }
 ACCUMULATOR(ROL, 0x2A)
 {
