@@ -1274,10 +1274,11 @@ IMPLIED(PLP, 0x28)
 }
 ACCUMULATOR(ROL, 0x2A)
 {
-    C = (A & 0x80) != 0;
+    bool newC = (A & 0x80) != 0;
 
     A = A << 1 | (u8) C;
 
+    C = newC;
     Z = A == 0;
     N = (A & 0x80) != 0;
 }
@@ -1285,10 +1286,11 @@ ZERO_PAGE(ROL, 0x26)
 {
     u8& m = ZeroPage();
 
-    C = (m & 0x80) != 0;
+    bool newC = (A & 0x80) != 0;
 
     m = m << 1 | (u8) C;
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1296,10 +1298,11 @@ ZERO_PAGE_X(ROL, 0x36)
 {
     u8& m = ZeroPageX();
 
-    C = (m & 0x80) != 0;
+    bool newC = (A & 0x80) != 0;
 
     m = m << 1 | (u8) C;
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1307,10 +1310,11 @@ ABSOLUTE(ROL, 0x2E)
 {
     u8& m = Absolute();
 
-    C = (m & 0x80) != 0;
+    bool newC = (A & 0x80) != 0;
 
     m = m << 1 | (u8) C;
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1318,19 +1322,21 @@ ABSOLUTE_X(ROL, 0x3E)
 {
     u8& m = AbsoluteX();
 
-    C = (m & 0x80) != 0;
+    bool newC = (A & 0x80) != 0;
 
     m = m << 1 | (u8) C;
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
 ACCUMULATOR(ROR, 0x6A)
 {
-    C = (A & 0x80) != 0;
+    bool newC = (A & 0x01) != 0;
 
     A = A >> 1 | ((u8) C << 7);
 
+    C = newC;
     Z = A == 0;
     N = (A & 0x80) != 0;
 }
@@ -1338,10 +1344,11 @@ ZERO_PAGE(ROR, 0x66)
 {
     u8& m = ZeroPage();
 
-    C = (m & 0x80) != 0;
+    bool newC = (m & 0x01) != 0;
 
-    m = m << 1 | ((u8) C << 7);
+    m = m >> 1 | (((u8) C) << 7);
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1349,10 +1356,11 @@ ZERO_PAGE_X(ROR, 0x76)
 {
     u8& m = ZeroPageX();
 
-    C = (m & 0x80) != 0;
+    bool newC = (m & 0x01) != 0;
 
-    m = m << 1 | ((u8) C << 7);
+    m = m >> 1 | ((u8) C << 7);
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1360,10 +1368,11 @@ ABSOLUTE(ROR, 0x6E)
 {
     u8& m = Absolute();
 
-    C = (m & 0x80) != 0;
+    bool newC = (m & 0x01) != 0;
 
-    m = m << 1 | ((u8) C << 7);
+    m = m >> 1 | ((u8) C << 7);
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
@@ -1371,10 +1380,11 @@ ABSOLUTE_X(ROR, 0x7E)
 {
     u8& m = AbsoluteX();
 
-    C = (m & 0x80) != 0;
+    bool newC = (m & 0x01) != 0;
 
-    m = m << 1 | ((u8) C << 7);
+    m = m >> 1 | ((u8) C << 7);
 
+    C = newC;
     Z = m == 0;
     N = (m & 0x80) != 0;
 }
