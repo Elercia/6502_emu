@@ -211,9 +211,9 @@ struct Cpu
     u8 AbsoluteY();
     void AbsoluteYWrite(u8 data);
     u16 Indirect();
-    u8 IndirectX();
+    u8& IndirectX();
     void IndirectXWrite(u8 data);
-    u8 IndirectY();
+    u8& IndirectY();
     void IndirectYWrite(u8 data);
 
     // All the operations

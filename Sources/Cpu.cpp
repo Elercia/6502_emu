@@ -45,8 +45,8 @@ u8 Cpu::PopStack()
 
 u8 Cpu::GetProcStatus(bool forceBreak /*= false*/)
 {
-    u8 P = (((u8) C) << 0) | (((u8) Z) << 1) | (((u8) I) << 2) | (((u8) D) << 3) | (((u8) 1) << 5) |
-           (((u8) V) << 6) | ((u8) N << 7);
+    u8 P = (((u8) C) << 0) | (((u8) Z) << 1) | (((u8) I) << 2) | (((u8) D) << 3) | (((u8) 1) << 5) | (((u8) V) << 6) |
+           ((u8) N << 7);
 
     if (forceBreak)
     {
@@ -147,25 +147,25 @@ void Cpu::ZeroPageWrite(u8 data)
 u8& Cpu::ZeroPageX()
 {
     u8 offset = ReadOneByte();
-    return ReadAt((0x0000 | (u16) offset) + (u16) X);
+    return ReadAt(0x0000 + (((u16) offset + (u16) X) % (u16) 256));
 }
 
 void Cpu::ZeroPageXWrite(u8 data)
 {
     u8 offset = ReadOneByte();
-    Write((0x0000 | (u16) offset) + (u16) X, data);
+    Write(0x0000 + (((u16) offset + (u16) X) % (u16) 256), data);
 }
 
 u8 Cpu::ZeroPageY()
 {
     u8 offset = ReadOneByte();
-    return ReadAt((0x0000 | (u16) offset) + (u16) Y);
+    return ReadAt(0x0000 + (((u16) offset + (u16) Y) % (u16) 256));
 }
 
 void Cpu::ZeroPageYWrite(u8 data)
 {
     u8 offset = ReadOneByte();
-    Write((0x0000 | (u16) offset) + (u16) Y, data);
+    Write(0x0000 + (((u16) offset + (u16) Y) % (u16) 256), data);
 }
 
 u16 Cpu::Relative()
@@ -245,36 +245,44 @@ u16 Cpu::Indirect()
     return (u16) v1 | (((u16) v2) << 8);
 }
 
-u8 Cpu::IndirectX()
+u8& Cpu::IndirectX()
 {
-    u8 offset = ReadOneByte();
-    offset += X;
+    u8 offset1 = ReadOneByte();
+    offset1 = (offset1 + X) % 256;
 
-    return offset;
+    u8 offset2 = (offset1 + 1) % 256;
+
+    u8 v1 = ReadAt(offset1);
+    u8 v2 = ReadAt(offset2);
+
+    u8 loc = v1 | (v2 << 8);
+
+    return ReadAt(loc);
 }
 
 void Cpu::IndirectXWrite(u8 data)
 {
-    u8 offset = ReadOneByte();
-    offset += X;
-
-    Write(offset, data);
+    u8& mem = IndirectX();
+    mem = data;
 }
 
-u8 Cpu::IndirectY()
+u8& Cpu::IndirectY()
 {
-    u8 offset = ReadOneByte();
-    offset += Y;
+    u8 offset1 = ReadOneByte();
+    u8 offset2 = (offset1 + 1) % 256;
 
-    return offset;
+    u8 v1 = ReadAt(offset1);
+    u8 v2 = ReadAt(offset2);
+
+    u8 loc = ( v1 | (v2 << 8) ) + Y;
+
+    return ReadAt(loc);
 }
 
 void Cpu::IndirectYWrite(u8 data)
 {
-    u8 offset = ReadOneByte();
-    offset += Y;
-
-    Write(offset, data);
+    u8& mem = IndirectY();
+    mem = data;
 }
 
 // **********************************************
