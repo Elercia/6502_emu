@@ -68,14 +68,14 @@ void Cpu::SetProcStatus(u8 status)
 
 void Cpu::Run()
 {
-    int nbOperationDone = 0;
-    u8 opCode = 0;
     while (true)
     {
         u16 opPC = PC;
-        opCode = ReadOneByte();
+        u8 opCode = ReadOneByte();
 
         auto opIt = OpCodes.find(opCode);
+
+#ifdef D_6502_DEBUG
         if (opIt == OpCodes.end())
         {
             ASSERT_NOT_REACHED();
@@ -83,15 +83,15 @@ void Cpu::Run()
         }
 
         printf("Doing $%04x %s\n", opPC, opIt->second.first);
+#endif
 
         (this->*(opIt->second.second))();
 
         if (PC == opPC)  // We are in a trap
         {
             ASSERT_NOT_REACHED();
+            break;
         }
-
-        nbOperationDone++;
     }
 }
 
@@ -271,7 +271,7 @@ u8& Cpu::IndirectY()
     u8 offset1 = ReadOneByte();
     u8 offset2 = (offset1 + 1) % 256;
 
-    u8 low = ReadAt((u16)offset1);
+    u8 low = ReadAt((u16) offset1);
     u8 high = ReadAt((u16) offset2);
 
     u16 loc = ((u16) low | ((u16) high << 8)) + Y;
@@ -297,114 +297,122 @@ IMMIDIATE(ADC, 0x69)
 {
     u8 m = Immediate();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 
 ZERO_PAGE(ADC, 0x65)
 {
     u8 m = ZeroPage();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE_X(ADC, 0x75)
 {
     u8 m = ZeroPageX();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE(ADC, 0x6D)
 {
     u8 m = Absolute();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_X(ADC, 0x7D)
 {
     u8 m = AbsoluteX();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_Y(ADC, 0x79)
 {
     u8 m = AbsoluteY();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_X(ADC, 0x61)
 {
     u8 m = IndirectX();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_Y(ADC, 0x71)
 {
     u8 m = IndirectY();
 
-    u16 res = (u16) A + (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 IMMIDIATE(AND, 0x29)
 {
@@ -1410,113 +1418,130 @@ IMMIDIATE(SBC, 0xE9)
 {
     u8 m = Immediate();
 
-    u16 res = (u16) A - (u16) m;
+    m = ~m;
+
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE(SBC, 0xE5)
 {
     u8 m = ZeroPage();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ZERO_PAGE_X(SBC, 0xF5)
 {
     u8 m = ZeroPageX();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE(SBC, 0xED)
 {
     u8 m = Absolute();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_X(SBC, 0xFD)
 {
     u8 m = AbsoluteX();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 ABSOLUTE_Y(SBC, 0xF9)
 {
     u8 m = AbsoluteY();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_X(SBC, 0xE1)
 {
     u8 m = IndirectX();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 INDIRECT_Y(SBC, 0xF1)
 {
     u8 m = IndirectY();
+    m = ~m;
 
-    u16 res = (u16) A - (u16) m;
+    u16 res = (u16) A + (u16) m + C;
     u8 newA = (u8)(res & 0x00FF);
 
-    V = (~(A ^ m)) & (A ^ newA) & 0x80;
+    V = (~(A ^ m) & (A ^ newA)) & 0x0080;
 
     A = newA;
 
     C = (res & 0xFF00) != 0;
     Z = A == 0;
+    N = (A & 0x80) != 0;
 }
 IMPLIED(SEC, 0x38)
 {

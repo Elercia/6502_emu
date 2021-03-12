@@ -41,9 +41,11 @@ void Memory<SIZE>::Dump()
 template <u16 SIZE>
 void Memory<SIZE>::LoadFromFile(u16 startLocation, const char* filename)
 {
-    FILE* file = fopen(filename, "rb");
+    FILE* file = nullptr;
 
-    if (file == NULL)
+    errno_t err = fopen_s(&file, filename, "rb");
+
+    if (file == NULL || err == EINVAL)
         return;
 
     fseek(file, 0, SEEK_END);
