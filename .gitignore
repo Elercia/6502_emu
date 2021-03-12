@@ -494,3 +494,9 @@ MigrationBackup/
 .ionide/
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,visualstudio,visualstudiocode,clion+all
+
+
+*.sln
+*.args.json
+*.vcxproj
+*.vcxproj.user
