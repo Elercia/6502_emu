@@ -19,6 +19,7 @@ PointerAlignment: Left
 AlignConsecutiveAssignments: false
 AlignTrailingComments: true
 
+IndentPPDirectives: BeforeHash
 
 SortIncludes  : true
 IncludeBlocks : Regroup
