@@ -80,6 +80,7 @@ workspace "6502_Cpu"
 		filter "configurations:Debug"
 			runtime "Debug"
 			symbols "on"
+			defines {"D_6502_DEBUG"}
 
 		filter "configurations:Release"
 			runtime "Release"
